@@ -54,13 +54,8 @@ class Auth extends CI_Controller {
             $data['error_message'] = validation_errors();
         }
         
-        // Check if module view exists, otherwise use regular view
-        if (file_exists(APPPATH . 'modules/auth/views/login.php')) {
-            // Load module view using modules/ path
-            $this->load->view('modules/auth/views/login', $data);
-        } else {
-            $this->load->view('auth/login', $data);
-        }
+        // Use the regular view from application/views/auth/login.php
+        $this->load->view('auth/login', $data);
     }
 
     /**
@@ -128,6 +123,9 @@ class Auth extends CI_Controller {
         // Log activity
         $this->Activity_log_model->log($user->id, 'login', 'User logged in successfully');
 
+        // Set success message
+        $this->session->set_flashdata('success', 'Welcome back, ' . $user->name . '! Login successful.');
+
         // Redirect based on role or stored redirect URL
         $redirect_url = $this->session->userdata('redirect_after_login');
         if ($redirect_url) {
@@ -182,13 +180,8 @@ class Auth extends CI_Controller {
         if ($this->session->flashdata('success')) {
             $data['success_message'] = $this->session->flashdata('success');
         }
-        // Check if module view exists, otherwise use regular view
-        if (file_exists(APPPATH . 'modules/auth/views/forgot_password.php')) {
-            // Load module view using modules/ path
-            $this->load->view('modules/auth/views/forgot_password', $data);
-        } else {
-            $this->load->view('auth/forgot_password', $data);
-        }
+        // Use the regular view from application/views/auth/forgot_password.php
+        $this->load->view('auth/forgot_password', $data);
     }
 
     /**

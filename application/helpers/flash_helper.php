@@ -96,7 +96,7 @@ if (!function_exists('display_flash_alerts')) {
         
         foreach ($types as $type) {
             $message = $CI->session->flashdata($type);
-            if (!empty($message)) {
+            if (!empty($message) && is_string($message)) {
                 $html .= show_flash_alert($type, $message, true);
             }
         }

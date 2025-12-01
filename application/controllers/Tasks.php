@@ -3,21 +3,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once APPPATH . 'core/Base_Controller.php';
 
-class Companies extends Base_Controller {
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->check_module_access('companies');
-    }
+class Tasks extends Base_Controller {
 
     public function index()
     {
-        // Prepare data for view
+        $this->check_module_access('tasks');
+        
         $data = array(
-            'title' => 'Companies - LÀ CRM',
+            'title' => 'Tasks - LÀ CRM',
             'body_class' => 'layout-mini',
-            'show_preloader' => true,
+            'show_preloader' => false,
             'header' => array(
                 'user_name' => $this->user_data->name,
                 'user_email' => $this->user_data->email,
@@ -31,18 +26,13 @@ class Companies extends Base_Controller {
                 'role_id' => $this->role_id
             ),
             'page_header' => array(
-                'page_title' => 'Companies',
-                'page_description' => 'Manage your companies'
+                'page_title' => 'Tasks',
+                'page_description' => 'Manage your tasks'
             ),
-            'content' => $this->load->view('companies_content', array(), true)
+            'content' => '<div class="card"><div class="card-body"><p class="text-muted">Tasks module coming soon.</p></div></div>'
         );
+        
         $this->load->view('layouts/base', $data);
-    }
-
-    public function add()
-    {
-        // TODO: Add company form
-        echo "Add company form - Coming soon";
     }
 }
 

@@ -15,8 +15,9 @@ class Auth extends MX_Controller {
         $this->load->model('Role_model');
         $this->load->model('Activity_log_model');
         
-        // If already logged in, redirect to dashboard
-        if ($this->session->userdata('logged_in') === true) {
+        // If already logged in, redirect to dashboard (but allow logout)
+        $current_method = $this->router->method;
+        if ($this->session->userdata('logged_in') === true && $current_method !== 'logout') {
             redirect('dashboard');
         }
     }
@@ -56,8 +57,18 @@ class Auth extends MX_Controller {
             $data['error_message'] = validation_errors();
         }
         
-        // In HMVC, load view from same module using just the view name
-        $this->load->view('login', $data);
+        // Load module view directly using file path
+        // HMVC module views need to be loaded with full path
+        $view_file = APPPATH . 'modules/auth/views/login.php';
+        if (file_exists($view_file)) {
+            // Extract variables for view
+            extract($data);
+            // Load the view file directly
+            include($view_file);
+        } else {
+            // Fallback to regular view
+            $this->load->view('auth/login', $data);
+        }
     }
 
     /**
@@ -143,18 +154,37 @@ class Auth extends MX_Controller {
      */
     public function logout()
     {
+        // Get user_id before destroying session
         $user_id = $this->session->userdata('user_id');
         
-        // Log activity
+        // Log activity before destroying session
         if ($user_id) {
-            $this->load->model('Activity_log_model');
-            $this->Activity_log_model->log($user_id, 'logout', 'User logged out');
+            try {
+                $this->load->model('Activity_log_model');
+                $this->Activity_log_model->log($user_id, 'logout', 'User logged out');
+            } catch (Exception $e) {
+                // Log error but continue with logout
+                log_message('error', 'Logout activity log failed: ' . $e->getMessage());
+            }
         }
 
-        // Destroy session
+        // Clear all session data
+        $this->session->unset_userdata('user_id');
+        $this->session->unset_userdata('role_id');
+        $this->session->unset_userdata('user_name');
+        $this->session->unset_userdata('user_email');
+        $this->session->unset_userdata('logged_in');
+        
+        // Destroy session completely
         $this->session->sess_destroy();
 
-        // Redirect to login
+        // Clear session cookie
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), '', time() - 3600, '/');
+        }
+
+        // Redirect to login with success message
+        $this->session->set_flashdata('success', 'You have been logged out successfully.');
         redirect('auth/login');
     }
 
@@ -182,8 +212,17 @@ class Auth extends MX_Controller {
         if ($this->session->flashdata('success')) {
             $data['success_message'] = $this->session->flashdata('success');
         }
-        // In HMVC, load view from same module using just the view name
-        $this->load->view('forgot_password', $data);
+        // Load module view directly using file path
+        $view_file = APPPATH . 'modules/auth/views/forgot_password.php';
+        if (file_exists($view_file)) {
+            // Extract variables for view
+            extract($data);
+            // Load the view file directly
+            include($view_file);
+        } else {
+            // Fallback to regular view
+            $this->load->view('auth/forgot_password', $data);
+        }
     }
 
     /**
